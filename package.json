@@ -1,0 +1,19 @@
+{
+  "name": "@dsh-external/dsh-tool-json",
+  "version": "0.1.0",
+  "description": "DSH JSON 查询工具插件：JMESPath 子集查询，零依赖递归下降解析器",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dsh-external/dsh-tool-json"
+  }
+}
