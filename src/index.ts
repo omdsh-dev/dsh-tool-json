@@ -19,10 +19,11 @@ export function apply(ctx: Context): void {
   ctx.tools.register(defineTool({
     name: 'json',
     description:
-      'Query JSON with a path expression. ' +
+      'Query JSON with a JMESPath-inspired path expression. ' +
       'Supports dot-notation (foo.bar), bracket-indexing (items[0]), ' +
-      "bracket-property (items['key'] or items[\"key\"]), and wildcard " +
-      'projection (items[*].name). Returns the matched value as JSON.',
+      "bracket-property (items['key'] or items[\"key\"]), and array " +
+      'wildcard projection (items[*].name, arrays only; multi-level ' +
+      'wildcards return nested arrays). Returns the matched value as JSON.',
     parameters: {
       input: {
         type: 'json',
