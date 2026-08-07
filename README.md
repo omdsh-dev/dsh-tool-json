@@ -77,14 +77,44 @@ ctx.tools.register(defineTool({
 
 **不支持**（低频场景，bash + node 兜底）：过滤器 `[?downloads > 1000]`、管道 `|`、函数调用。
 
+## 版本适配
+
+- **适配 DSH snapshot**: `20260806T160212Z-279244acb0`（0806 迁移：profile/bundle 插件系统）
+- **bundle 声明**: `package.json` 的 `dsh.bundle`（patch 指向 `cordis.patch.yml`）+ `exports` 导出
+- **patch 格式**: `cordis.patch.yml` 使用 `- insert:` 列表（0806 的 patch 是 id-targeted 语义，裸 `- id:` 条目会报 `entry not found`）
+- **files**: 发布 tarball 含 `lib/`、`src/`、`cordis.patch.yml`
+
 ## 接入方式
 
-1. 放入 monorepo：`cp -r dsh-tool-json ~/.dsh/source/master/packages/tools/dsh-tool-json`
-2. `apps/cli/package.json` 加 `"@deepseek-ai/dsh-tool-json": "workspace:^"`
-3. `apps/cli/config/base.cordis.yml` 加 `- id: tool-json / name: '@deepseek-ai/dsh-tool-json'`
-4. `tsconfig.host.json` references 加 `{ "path": "./packages/tools/dsh-tool-json" }`
-5. `pnpm install && pnpm test` 本地验证；集成后由 DSH monorepo 根 `pnpm run build` 构建，再 `dsh -p` 验证
+### 方式 A：DSH profile 插件安装（0806+，推荐）
 
+等 `@deepseek-ai/dsh-tools` 发布到 npm 后，本插件可作为独立 bundle 一键安装到任意 profile：
+
+```bash
+dsh plugin --profile headless add @dsh-external/dsh-tool-json
+dsh plugin --profile web add @dsh-external/dsh-tool-json
+```
+
+包内 `dsh.bundle` 声明（patch 指向 `cordis.patch.yml`）会在安装后自动把插件加入 profile 的 layer stack；插件的 `cordis.patch.yml` 以 `- insert:` 插入 `tool-json` 条目。插件缺失的 peer 依赖（`cordis`、`@deepseek-ai/dsh-tools`）由 profile 的 healed `profiles/node_modules` 回退安装提供。
+
+### 方式 B：monorepo 集成 + profile patch（当前可用）
+
+在 `@deepseek-ai/dsh-tools` 发布前，走 DSH monorepo：
+
+1. 放入 monorepo：`cp -r json ~/.dsh/source/master/packages/tools/json`
+2. `apps/cli/package.json` 加 `"@deepseek-ai/json": "workspace:^"`；`tsconfig.host.json` references 加 `{ "path": "./packages/tools/json" }`
+3. `pnpm install && pnpm run build`（monorepo 根构建，产出 `lib/`）
+4. 在 profile 用户层 patch 插入插件（`~/.dsh/profiles/<name>/cordis.patch.yml`）：
+
+```yaml
+- insert:
+    - id: tool-json
+      name: '@deepseek-ai/json'
+```
+
+5. 验证：`dsh --profile <name> --dump-config | grep tool-json`
+
+> 0806 注意：patch 是 id-targeted 语义——裸 `- id:` 条目会报 `entry "xxx" not found`，必须用 `- insert:` 列表包裹。
 ## 用法
 
 ```
