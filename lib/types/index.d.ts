@@ -6,7 +6,7 @@
  *   - id: tool-json
  *     name: '@deepseek-ai/dsh-tool-json'
  */
-import type { Context } from 'cordis';
+import type { Context } from '@deepseek-ai/cordis';
 export declare const name = "@deepseek-ai/dsh-tool-json";
 export declare const inject: string[];
 export declare function apply(ctx: Context): void;
