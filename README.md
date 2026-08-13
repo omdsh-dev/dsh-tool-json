@@ -1,5 +1,7 @@
 # dsh-tool-json
 
+[English](README.en.md)
+
 DSH JSON 查询工具插件 —— JMESPath-inspired 路径查询（自定义子集），零依赖递归下降解析器。
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
