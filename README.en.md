@@ -79,39 +79,49 @@ ctx.tools.register(defineTool({
 
 **Not supported** (low-frequency scenarios; fall back to bash + node): filters `[?downloads > 1000]`, pipes `|`, function calls.
 
-## npm rc.1 compatibility (verified)
+## npm 0.1.0-rc.6 compatibility (verified)
 
-This plugin has been migrated to the npm rc.1 dependency line and fully verified in an isolated consumer of `@deepseek-ai/dsh@0.0.1-rc.1`:
+This plugin has been migrated to the npm 0.1.0-rc.6 dependency line and fully verified in an isolated consumer of `@deepseek-ai/dsh@0.1.0-rc.6`:
 
-- **Types/runtime**: `@deepseek-ai/cordis@^4.0.1-rc.1` + `@deepseek-ai/dsh-tools@^0.0.1-rc.1` + `@deepseek-ai/dsh-invariants@^0.0.1-rc.1` (peer); no longer depends on unscoped `cordis`
+- **Types/runtime**: `@deepseek-ai/cordis@^4.0.1` + `@deepseek-ai/dsh-tools@>=0.0.1-rc.1 <0.2.0` + `@deepseek-ai/dsh-invariants@>=0.0.1-rc.1 <0.2.0` (peer); no longer depends on unscoped `cordis`
 - **Standalone build**: `npm install` (devDependencies are self-contained: typescript/vitest/@types/node) → `npm run typecheck` → `npm test` → `npm run build` → `npm pack`
-- **Consumption verification**: tarball installed into the rc.1 consumer → `dsh --profile compat --dump-config` shows this plugin's row → the tool actually registers and executes
-- **Startup**: `npx -p @deepseek-ai/dsh@0.0.1-rc.1 dsh web` (lib production mode; do not `install -g` globally)
+- **Consumption verification**: tarball installed into the 0.1.0-rc.6 consumer → `dsh --profile compat --dump-config` shows this plugin's row → the tool actually registers and executes
+- **Startup**: `npx -p @deepseek-ai/dsh@0.1.0-rc.6 dsh web` (lib production mode; do not `install -g` globally)
 
 
 ## Version adaptation
 
-- **DSH snapshot adapted**: `20260806T160212Z-279244acb0` (0806 migration: profile/bundle plugin system)
+- **DSH version adapted**: DSH 0.1.0-rc.6 (npm)
 - **Bundle declaration**: `dsh.bundle` in `package.json` (patch points to `cordis.patch.yml`) + `exports` fields
-- **Patch format**: `cordis.patch.yml` uses the `- insert:` list (0806 patches are id-targeted; a bare `- id:` entry reports `entry not found`)
+- **Patch format**: `cordis.patch.yml` uses the `- insert:` list (patches are id-targeted; a bare `- id:` entry reports `entry not found`)
 - **files**: the published tarball contains `lib/`, `src/`, `cordis.patch.yml`
 
 ## Installation
 
+Plugin source repository: `https://github.com/omdsh-dev/dsh-tool-json` (public).
+
 ### Profile Bundle (recommended)
 
-Install this plugin as a standalone bundle into a profile (0806+):
+Install this plugin as a standalone bundle into a profile (DSH 0.1.0-rc.6, npm):
 
 ```sh
 # 交互式（web）profile
-dsh plugin --profile web add "C:/path/to/dsh-tool-json"
+dsh plugin --profile web add github:omdsh-dev/dsh-tool-json
 # 一次性任务（headless）profile —— dsh run 默认使用 headless
-dsh plugin --profile headless add "C:/path/to/dsh-tool-json"
+dsh plugin --profile headless add github:omdsh-dev/dsh-tool-json
 ```
 
-The `dsh.bundle.patch` inside the package (pointing to `cordis.patch.yml`) automatically adds the plugin to the profile's layer stack after installation; the plugin's `cordis.patch.yml` inserts the `tool-json` entry via `- insert:`. Missing peer dependencies of the plugin (`cordis`, `@deepseek-ai/dsh-tools`) are provided by the profile's healed `profiles/node_modules` fallback install.
+The `dsh.bundle.patch` inside the package (pointing to `cordis.patch.yml`) automatically adds the plugin to the profile's layer stack after installation; the plugin's `cordis.patch.yml` inserts the `tool-json` entry via `- insert:`.
 
-> ⚠️ web and headless are **different profiles**: installing into web does not automatically cover headless; `dsh run` uses the headless profile by default. Use forward slashes for Windows paths (`C:/...`).
+> ⚠️ web and headless are **different profiles**: installing into web does not automatically cover headless; `dsh run` uses the headless profile by default.
+
+### Install via npm pack tarball
+
+```sh
+npm pack    # generates dsh-tool-json-*.tgz
+dsh plugin --profile web add ./dsh-tool-json-*.tgz
+dsh plugin --profile headless add ./dsh-tool-json-*.tgz
+```
 
 ### Verify installation
 
@@ -142,7 +152,7 @@ Only for legacy snapshots that do not support Profile Bundle, or plugin developm
 
 5. Verify: `dsh --profile <name> --dump-config | grep tool-json`
 
-> 0806 note: patches are id-targeted — a bare `- id:` entry reports `entry "xxx" not found`; it must be wrapped in an `- insert:` list.
+> Note: patches are id-targeted — a bare `- id:` entry reports `entry "xxx" not found`; it must be wrapped in an `- insert:` list.
 ## Usage
 
 ```
@@ -153,10 +163,9 @@ json { input: <JSON>, query: "items['complex-key']" }  → "ok"
 
 ## Known limitations
 
-1. Distribution chain: `@deepseek-ai/dsh-tools` is private and requires a monorepo workspace
-2. Read-only: cannot modify JSON fields (use `str_replace_editor`/`write` for in-place edits; a `set` mode may be considered for v2)
-3. No filter expressions, no standard JMESPath projection flattening (see semantic boundaries)
-4. Object-form input relies on the DSH parameter pipeline to guarantee lossless JSON
+1. Read-only: cannot modify JSON fields (use `str_replace_editor`/`write` for in-place edits; a `set` mode may be considered for v2)
+2. No filter expressions, no standard JMESPath projection flattening (see semantic boundaries)
+3. Object-form input relies on the DSH parameter pipeline to guarantee lossless JSON
 
 ## Testing
 
